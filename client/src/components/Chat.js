@@ -67,6 +67,56 @@ function Chat(props) {
                 {room}
             </row>
         );
+    };
+
+    function renderUsers(user){
+        if (user.id === props.yourId){
+            return(
+                <row key={user.id}>
+                    You: {user.username}
+                </row>
+            );
+        }
+        const currentChat = {
+            chatName: user.username,
+            isChannel: false,
+            receiverId: user.id,
+        }
+        return (
+            <row onClick = {() => props.toggleChat(currentChat)} key={user.id}>
+                {user.username}
+            </row>
+        );
+    };
+
+    function renderMessages(message){
+        return(
+            <div key={index}>
+                <h3>{message.sender}</h3>
+                <p>{message.content}</p>
+            </div>
+        );
+    }
+
+    let body;
+    if (props.currentChat.isChannel || props.connectedRooms.includes(props.currentChat.chatName)){
+        body = (
+            <Messages>
+                {props.messages.map(renderMessages)}
+            </Messages>
+        );
+    } else {
+        body = (
+            <button onClick={() => props.joinRoom(props.currentChat.chatName)}>
+                Join {props.currentChat.chatName}
+            </button>
+        );
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === "Enter") {
+            props.sendMessage();
+        }
     }
 
     return(
