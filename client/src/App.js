@@ -26,6 +26,10 @@ function App() {
     setMessage(e.target.value);
   };
 
+  useEffect(() => {
+    setMessage("");
+  }, [messages]);
+
   function sendMessage() {
     const payload = {
       content: message,
@@ -46,7 +50,59 @@ function App() {
     setMessages(newMessages);
   }
 
-  let body:
+  function roomJoinCallback(incommingMessages, room) {
+    const newMessages = immer(messages, draft => {
+      draft[room] = incommingMessages;
+    });
+    setMessages(newMessages);
+  }
+
+  function joinRoom(room){
+    const newConnectedRooms = immer(connectedRooms, draft => {
+      draft.push(room);
+    });
+
+    socketRef.current.emit("join room", room, (messages) => roomJoinCallback(messages, room));
+    setConnectedRooms(newConnectedRooms);
+  }
+
+  function toggleChat(currentChat) {
+    if (!messages[currentChat.chatName]) {
+      const newMessages = immer(messages, draft => {
+        draft[currentChat.chatName] = [];
+      });
+      setMessages(newMessages);
+    }
+    setCurrentChat(currentChat);
+  }
+
+  function handleChange(e) {
+    setUsername(e.target.value);
+  }
+
+  function connect() {
+    setConnected(true);
+    socketRef.current = io.connect("/");
+    socketRef.current.emit("join server", username);
+    socketRef.current.emit(joinRoom, "general", (messages) => roomJoinCallback(messages, "general"));
+    socketRef.current.on("new user", allUsers => {
+      setAllUsers(allUsers);
+    });
+    socketRef.current.on("new message", ({ content, sender, chatName }) => {
+      setMessages(messages =>{
+        const newMessages = immer(messages, draft =>{
+          if (draft[chatName]){
+            draft[chatName].push({ content, sender });
+          } else {
+            draft[chatName] = [{ content, sender }];
+          }
+        });
+        return newMessages;
+      });
+    });
+  }
+
+  let body;
   if (connected) {
     body = (
       <Chat
@@ -59,7 +115,7 @@ function App() {
         connectedRooms={connectedRooms}
         currentChat={currentChat}
         toggleChat={toggleChat}
-        message={messages[currentChat.chatName]}
+        messages={messages[currentChat.chatName]}
       />
     );
   } else {
@@ -70,7 +126,7 @@ function App() {
 
   return (
     <div className="App">
-      
+      {body}
     </div>
   );
 }
