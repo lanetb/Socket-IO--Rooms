@@ -63,18 +63,18 @@ function Chat(props) {
             receiverId: "",
         }
         return(
-            <row onClick = {() => props.toggleChat(currentChat)} key={room}>
+            <Row onClick = {() => props.toggleChat(currentChat)} key={room}>
                 {room}
-            </row>
+            </Row>
         );
     };
 
     function renderUsers(user){
         if (user.id === props.yourId){
             return(
-                <row key={user.id}>
+                <Row key={user.id}>
                     You: {user.username}
-                </row>
+                </Row>
             );
         }
         const currentChat = {
@@ -83,23 +83,23 @@ function Chat(props) {
             receiverId: user.id,
         }
         return (
-            <row onClick = {() => props.toggleChat(currentChat)} key={user.id}>
+            <Row onClick = {() => props.toggleChat(currentChat)} key={user.id}>
                 {user.username}
-            </row>
+            </Row>
         );
     };
 
-    function renderMessages(message){
+    function renderMessages(message, index){
         return(
             <div key={index}>
                 <h3>{message.sender}</h3>
                 <p>{message.content}</p>
             </div>
         );
-    }
+    };
 
     let body;
-    if (props.currentChat.isChannel || props.connectedRooms.includes(props.currentChat.chatName)){
+    if (!props.currentChat.isChannel || props.connectedRooms.includes(props.currentChat.chatName)){
         body = (
             <Messages>
                 {props.messages.map(renderMessages)}
@@ -111,13 +111,13 @@ function Chat(props) {
                 Join {props.currentChat.chatName}
             </button>
         );
-    }
+    };
 
     function handleKeyPress(e) {
         if (e.key === "Enter") {
             props.sendMessage();
         }
-    }
+    };
 
     return(
         <Container>
